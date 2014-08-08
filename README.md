@@ -44,7 +44,7 @@ $searchCriteria->filters = array('status' => 1);
 $searchCriteria->query = 'keywords';
 $searchCriteria->from = 'product';
 $searchCriteria->groupby = 'id';
-$searchCriteria->orders = array('name' => 'ASC');
+$searchCriteria->orders = 'f_name ASC, id DESC';
 $searchCriteria->paginator->pageSize = 1000;
 $searchCriteria->fieldWeights = array(
     'name' => 20,
@@ -66,7 +66,7 @@ $search->select('*')->
     where($expression)->
     filters(array('project_id' => $this->_city->id))->
     groupby($groupby)->
-    orderby(array('f_name' => 'ASC'))->
+    orderby('f_name ASC, id DESC'))->
     limit(0, 30);
 $resIterator = $search->search(); // interator result
 /* OR */
