@@ -281,11 +281,11 @@ class ESphinxSearch extends CApplicationComponent
      * @param ESort $orders
      * @return $this chain
      */
-    public function orderby(ESort $orders = null)
+    public function orderby($orders = null)
     {
-        $this->criteria->orders = $orders;
-        if ($orders && $orders->getOrderBy()) {
-            $this->client->SetSortMode(SPH_SORT_EXTENDED, $orders->getOrderBy());
+        if ($orders) {
+            $this->criteria->orders = $orders;        
+            $this->client->SetSortMode(SPH_SORT_EXTENDED, $orders);
         }
         return $this;
     }
