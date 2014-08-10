@@ -5,11 +5,14 @@ Yii extension for Sphinx Search
 
 forked from http://www.yiiframework.com/extension/dgsphinxsearch/
 
+1. put your yii sphinx extension under application extension directory
+
+2. change your application configuration file as below:
 
 ```php
 return array(
     'aliases' => array(
-        'sphinx' => realpath(VENDOR_PATH . '/cornernote/yii-sphinx/sphinx'),
+        'sphinx' => 'sphinx' => 'application.extensions.yii-sphinx',
     ),
     'components' => array(
         'sphinx' => array(
@@ -32,8 +35,9 @@ return array(
      ),
 );
 ```
+note that in production server, change enableProfiling and enableParamLogging to 0;
 
-
+3. various usages in your yii project:
 Search by criteria Object:
 
 ```php
@@ -163,3 +167,7 @@ class ProductIndex extends ESphinxActiveRecord
 
 }
 ```
+
+4. working with view CPaginator
+you can pass indexes(from sphinx engine) array back to normal yii sql query as a "in" condition criteria.
+and set the total count of paginator to a large number say 1000, should be enough in most cases.
