@@ -19,8 +19,10 @@
  * @author     Alexander Radionov <alex.radionov@gmail.com>
  * @author     Andrey Trofimenko <a.trofimenko@2gis.ru>
  * @author     Artem Kudzev <a.kiudzev@2gis.ru>
+ * @author     iefreer <iefreer@hotmail.com>
  *
  * @link       http://www.2gis.ru
+ * @link https://github.com/iefreer/yii-sphinx
  * @copyright  2GIS
  * @license http://www.yiiframework.com/license/
  *
@@ -28,60 +30,12 @@
  * --------------
  *  - Yii 1.1.x or above
  *  - SphinxClient php library
- *
- * Usage:
- * --------------
- *
- * Search by criteria Object:
- *
- *     $searchCriteria = new ESphinxCriteria();
- *     $searchCriteria->select = 'project_id';
- *     $searchCriteria->filters = array('project_id' => $project_id);
- *     $searchCriteria->query = '@name '.$query.'*';
- *     $searchCriteria->paginator->pageSize = Yii::app()->params['firmPerPage'];
- *     $searchCriteria->groupby = $groupby;
- *     $searchCriteria->orders = array('f_name' => 'ASC');
- *     $searchCriteria->from = 'firm';
- *     $resIterator = Yii::App()->search->search($searchCriteria); // interator result
- *     or
- *     $resArray = Yii::App()->search->searchRaw($searchCriteria); // array result
- *
- *
- * Search by SQL-like syntax:
- *
- *      $search->select('*')->
- *               from($indexName)->
- *               where($expression)->
- *               filters(array('project_id' => $this->_city->id))->
- *               groupby($groupby)->
- *               orderby(array('f_name' => 'ASC'))->
- *               limit(0, 30);
- *      $resIterator = $search->search(); // interator result
- *      or
- *      $resArray = $search->searchRaw(); // array result
- *
- * Search by SphinxClient syntax:
- *
- *      $search = Yii::App()->search;
- *      $search->setSelect('*');
- *      $search->setArrayResult(false);
- *      $search->setMatchMode(SPH_MATCH_EXTENDED);
- *      $search->setFieldWeights($fieldWeights)
- *      $search->query( $query, $indexName);
- *
- *
- * Combined Method:
- *
- *      $search = Yii::App()->search->
- *                            setArrayResult(false)->
- *                            setMatchMode(SPH_MATCH_EXTENDED);
- *      $search->select('field_1, field_2')->search($searchCriteria);
- *                                     ;
+ *                                ;
  */
 if (!class_exists('SphinxClient', false)) {
     include_once(dirname(dirname(__FILE__)) . '/sphinxapi.php');
 }
-
+include_once(dirname(__FILE__) . '/ESphinxSearchResult.php');
 class ESphinxSearch extends CApplicationComponent
 {
 
@@ -278,13 +232,13 @@ class ESphinxSearch extends CApplicationComponent
 
     /**
      * @brief set matches sorting, SQL-like syntax - 'order_by expression'
-     * @param ESort $orders
+     * @param array $orders
      * @return $this chain
      */
     public function orderby($orders = null)
     {
-        if ($orders) {
-            $this->criteria->orders = $orders;        
+        $this->criteria->orders = $orders;        
+        if ($orders) {      
             $this->client->SetSortMode(SPH_SORT_EXTENDED, $orders);
         }
         return $this;
@@ -298,8 +252,6 @@ class ESphinxSearch extends CApplicationComponent
      */
     public function limit($offset = null, $limit = null)
     {
-        $this->criteria->paginator->setCurrentPage($offset ? ($offset / $limit) : 0);
-        $this->criteria->paginator->pageSize = $limit;
         if (isset($offset) && isset($limit)) {
             $this->client->setLimits($offset, $limit);
         }
@@ -334,7 +286,7 @@ class ESphinxSearch extends CApplicationComponent
         $this->client->setMatchMode($this->matchMode);
         $this->client->setRankingMode($this->rankMode);
         $this->client->setSortMode(SPH_SORT_RELEVANCE, '@relevance DESC');
-        $this->client->setLimits(0, 1000000, 2000);
+        $this->client->setLimits(0, 1000);
         if (!empty($this->fieldWeights)) {
             $this->client->setFieldWeights($this->fieldWeights);
         }
@@ -348,14 +300,6 @@ class ESphinxSearch extends CApplicationComponent
     {
         if (!is_object($criteria)) {
             throw new CException('Criteria does not set.');
-        }
-        if (isset($criteria->paginator)) {
-            if (!is_object($criteria->paginator)) {
-                throw new CException('Criteria paginator invalid.');
-            }
-            $this->limit($criteria->paginator->getOffset(), $criteria->paginator->getLimit());
-
-            $this->criteria->paginator = $criteria->paginator;
         }
 
         // set select expression
@@ -479,16 +423,6 @@ class ESphinxSearch extends CApplicationComponent
 
         // process search
         $res = $this->doSearch($this->criteria->from, $this->criteria->query);
-
-        //ugly hack
-        if ($criteria->paginator) {
-            if (isset($res['total'])) {
-                $criteria->paginator->setItemCount($res['total']);
-            }
-            else {
-                $criteria->paginator->setItemCount(0);
-            }
-        }
 
         return $res;
     }
