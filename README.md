@@ -12,7 +12,7 @@ forked from http://www.yiiframework.com/extension/dgsphinxsearch/
 ```php
 return array(
     'aliases' => array(
-        'sphinx' => 'sphinx' => 'application.extensions.yii-sphinx',
+        'sphinx' => 'application.extensions.yii-sphinx',
     ),
     'components' => array(
         'sphinx' => array(
