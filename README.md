@@ -5,11 +5,14 @@ Yii extension for Sphinx Search
 
 forked from http://www.yiiframework.com/extension/dgsphinxsearch/
 
+*) put your yii sphinx extension under application extension directory
+
+*) change your application configuration file as below
 
 ```php
 return array(
     'aliases' => array(
-        'sphinx' => realpath(VENDOR_PATH . '/cornernote/yii-sphinx/sphinx'),
+        'sphinx' => 'sphinx' => 'application.extensions.yii-sphinx',
     ),
     'components' => array(
         'sphinx' => array(
@@ -32,8 +35,9 @@ return array(
      ),
 );
 ```
+note that in production server, change enableProfiling and enableParamLogging to 0;
 
-
+*) various usages in your yii project:
 Search by criteria Object:
 
 ```php
@@ -44,7 +48,7 @@ $searchCriteria->filters = array('status' => 1);
 $searchCriteria->query = 'keywords';
 $searchCriteria->from = 'product';
 $searchCriteria->groupby = 'id';
-$searchCriteria->orders = array('name' => 'ASC');
+$searchCriteria->orders = 'f_name ASC, id DESC';
 $searchCriteria->paginator->pageSize = 1000;
 $searchCriteria->fieldWeights = array(
     'name' => 20,
@@ -66,7 +70,7 @@ $search->select('*')->
     where($expression)->
     filters(array('project_id' => $this->_city->id))->
     groupby($groupby)->
-    orderby(array('f_name' => 'ASC'))->
+    orderby('f_name ASC, id DESC'))->
     limit(0, 30);
 $resIterator = $search->search(); // interator result
 /* OR */
@@ -163,3 +167,7 @@ class ProductIndex extends ESphinxActiveRecord
 
 }
 ```
+
+*) working with view CPaginator
+you can pass indexes(from sphinx engine) array back to normal yii sql query as a "in" condition criteria.
+and set the total count of paginator to a large number say 1000, should be enough in most cases.
